@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>scikit-learn Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<!-- Plotly is served by the local Python server (works offline); CDN is the fallback -->
+<script src="/vendor/plotly.min.js"></script>
+<script>window.Plotly || document.write('<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"><\/script>')</script>
+<style>
+:root {
+  --bg: #eef1f6;
+  --grid: rgba(15, 23, 42, .045);
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --frame: #f3f5f9;
+  --border: #e5e9f0;
+  --ink: #0f1115;
+  --ink-2: #2b313b;
+  --muted: #6b7280;
+  --faint: #9aa3b2;
+  --blue: #1f4ff5;
+  --blue-2: #3b6dff;
+  --blue-soft: #e9efff;
+  --blue-bar: #d6e1ff;
+  --red: #e5484d;
+  --red-soft: #fdecec;
+  --green: #18a058;
+  --green-soft: #e6f6ed;
+  --amber: #d98a0b;
+  --amber-soft: #fdf3e1;
+  --sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r-lg: 22px;
+  --r: 14px;
+  --r-sm: 10px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 30px -12px rgba(15, 23, 42, .10);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; font-family: var(--sans); color: var(--ink); font-size: 14px;
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font-family: inherit; }
+button { cursor: pointer; }
+svg.i { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.mono { font-family: var(--mono); }
+
+/* ---------------- landing ---------------- */
+.landing { max-width: 1240px; margin: 28px auto 0; padding: 0 24px; }
+.shell { background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35)); border: 1px solid #fff; border-radius: 36px; box-shadow: var(--shadow); padding: 0 40px 56px; position: relative; overflow: hidden; }
+.shell::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 80px 80px; pointer-events: none; mask-image: linear-gradient(180deg, #000 30%, transparent); }
+nav.top { position: relative; display: flex; align-items: center; height: 92px; border-bottom: 1px solid var(--border); margin: 0 -40px; padding: 0 40px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; letter-spacing: -.01em; color: var(--ink); text-decoration: none; }
+.logo .mk { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; }
+.logo .mk svg { width: 17px; height: 17px; stroke-width: 2.2; }
+.navlinks { display: flex; gap: 40px; margin: 0 auto; }
+.navlinks a { color: var(--ink-2); text-decoration: none; font-size: 14.5px; font-weight: 500; }
+.navlinks a:hover { color: var(--blue); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: 11px 20px; font-size: 14px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--ink); transition: transform .08s, box-shadow .15s, background .15s; text-decoration: none; white-space: nowrap; }
+.btn:hover { box-shadow: 0 6px 16px -8px rgba(15,23,42,.25); }
+.btn:active { transform: translateY(1px); }
+.btn.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn.dark:hover { background: #23272f; }
+.btn.blue { background: var(--blue); color: #fff; border-color: var(--blue); border-radius: 999px; padding: 9px 18px; }
+.btn.blue:hover { background: #1640d4; }
+.btn.sm { padding: 7px 13px; font-size: 12.5px; border-radius: 8px; }
+.btn:disabled { opacity: .55; cursor: progress; }
+.status { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px 6px 10px; margin-left: 14px; }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
+.status.ok i { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.status.bad i { background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.hero { position: relative; text-align: center; padding: 60px 0 10px; }
+.eyebrow { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+.hero h1 { font-size: clamp(34px, 4.6vw, 54px); font-weight: 600; letter-spacing: -.035em; line-height: 1.12; margin: 0 auto 22px; max-width: 760px; color: #20242c; }
+.hero p { color: var(--ink-2); font-size: 15.5px; line-height: 1.65; max-width: 560px; margin: 0 auto 32px; }
+.hero .ctas { display: flex; justify-content: center; gap: 14px; }
+.chips { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; }
+.chips span { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); display: grid; place-items: center; color: var(--blue); box-shadow: var(--shadow); }
+.chips span svg { width: 18px; height: 18px; }
+.chips span:hover { transform: translateY(-2px); transition: transform .2s; }
+@media (max-width: 900px) { .navlinks { display: none; } .shell { padding: 0 20px 40px; border-radius: 26px; } nav.top { margin: 0 -20px; padding: 0 20px; } }
+
+/* ---------------- app frame ---------------- */
+#app { max-width: 1240px; margin: -36px auto 0; padding: 0 24px 40px; position: relative; z-index: 2; }
+.frame { display: grid; grid-template-columns: 236px 1fr; background: var(--frame); border: 1px solid #fff; border-radius: 28px; box-shadow: 0 30px 80px -30px rgba(15,23,42,.25); min-height: 900px; }
+@media (max-width: 980px) { .frame { grid-template-columns: 1fr; } }
+
+/* sidebar */
+aside { padding: 26px 18px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+@media (max-width: 980px) { aside { border-right: 0; border-bottom: 1px solid var(--border); } aside .side-scroll { display: flex; overflow-x: auto; gap: 6px; } aside .sec, aside .sub, aside .side-foot { display: none; } }
+aside .logo { padding: 0 6px 22px; }
+aside .sec { font-size: 12.5px; color: var(--muted); padding: 10px 8px 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 12px; color: var(--ink-2); font-weight: 500; font-size: 14px; border: 0; background: none; width: 100%; text-align: left; white-space: nowrap; }
+.nav-item .ic { width: 30px; height: 30px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; color: var(--blue); border: 1px solid var(--border); flex: none; }
+.nav-item .ic svg { width: 14px; height: 14px; }
+.nav-item .chev { margin-left: auto; color: var(--faint); }
+.nav-item:hover { background: rgba(255,255,255,.7); }
+.nav-item.active { background: var(--blue); color: #fff; box-shadow: 0 8px 20px -8px rgba(31,79,245,.6); }
+.nav-item.active .ic { background: rgba(255,255,255,.18); border-color: transparent; color: #fff; }
+.nav-item.active .chev { color: #fff; }
+.sub { margin: 2px 0 6px 25px; padding-left: 14px; border-left: 1.5px solid var(--border); }
+.sub button { display: flex; align-items: center; gap: 9px; border: 0; background: none; color: var(--muted); font-size: 12.5px; padding: 6px 6px; width: 100%; border-radius: 8px; text-align: left; }
+.sub button:hover { color: var(--ink); background: rgba(255,255,255,.7); }
+.sub button.on { color: var(--blue); font-weight: 600; }
+.sub button i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.side-foot { margin-top: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.side-foot b { color: var(--ink); display: block; margin-bottom: 4px; font-size: 13px; }
+
+/* main */
+main { padding: 24px 26px 34px; min-width: 0; }
+.topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1f4ff5, #7aa2ff); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; box-shadow: 0 0 0 3px #fff; }
+.hello b { font-size: 16px; font-weight: 600; display: block; }
+.hello span { font-size: 12.5px; color: var(--muted); }
+.topbar .spacer { flex: 1; }
+.search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0 14px; height: 40px; width: 300px; color: var(--faint); }
+.search input { border: 0; outline: 0; font-size: 13px; width: 100%; background: none; color: var(--ink); }
+.iconbtn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: grid; place-items: center; color: var(--ink-2); position: relative; }
+.iconbtn:hover { color: var(--blue); }
+.iconbtn .dot { position: absolute; top: 9px; right: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--red); display: none; }
+@media (max-width: 760px) { .search { display: none; } }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; box-shadow: 0 1px 2px rgba(15,23,42,.03); min-width: 0; }
+.card-h { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.card-h .bubble { width: 38px; height: 38px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; color: var(--blue); flex: none; }
+.card-h b { font-size: 14.5px; font-weight: 600; display: block; }
+.card-h small { font-size: 12px; color: var(--muted); }
+.card-h .acts { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.minibtn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: grid; place-items: center; color: var(--ink-2); }
+.minibtn:hover { color: var(--blue); border-color: #cbd6f5; }
+.minibtn svg { width: 14px; height: 14px; }
+.sel { height: 34px; border: 1px solid var(--border); border-radius: 999px; padding: 0 30px 0 14px; font-size: 12.5px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center; appearance: none; color: var(--ink-2); cursor: pointer; }
+
+/* config bar */
+.config { display: grid; grid-template-columns: 1.5fr 1.5fr 1.1fr .6fr auto; gap: 14px; align-items: start; margin-bottom: 18px; }
+@media (max-width: 1100px) { .config { grid-template-columns: 1fr 1fr; } }
+.field label { display: block; font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+.field select, .field input[type=number], .field input[type=text] { width: 100%; height: 40px; border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; font-size: 13.5px; background: var(--surface-2); color: var(--ink); }
+.field select { appearance: none; background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; padding-right: 30px; }
+.field select:focus, .field input:focus { outline: 2px solid #c8d5ff; border-color: var(--blue-2); }
+.field .hint { font-size: 11.5px; color: var(--faint); margin-top: 6px; min-height: 15px; line-height: 1.35; }
+.range { display: flex; align-items: center; gap: 10px; height: 40px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; }
+.range input { flex: 1; accent-color: var(--blue); }
+.range output { font-family: var(--mono); font-size: 12.5px; width: 34px; text-align: right; }
+.config .go { display: flex; gap: 8px; padding-top: 20px; }
+
+/* alert */
+.alert { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 16px; }
+.alert .bell { width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; flex: none; }
+.alert b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.alert p { margin: 0; color: var(--ink-2); font-size: 13.5px; line-height: 1.5; }
+.alert .hl { color: var(--red); font-weight: 500; }
+.alert .hl.good { color: var(--green); }
+.alert .btn { margin-left: auto; }
+@media (max-width: 700px) { .alert { flex-wrap: wrap; } .alert .btn { margin-left: 58px; } }
+
+/* KPIs */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+@media (max-width: 1100px) { .kpis { grid-template-columns: 1fr 1fr; } }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 18px; position: relative; }
+.kpi .t { font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+.kpi .t button { border: 0; background: none; color: var(--faint); padding: 2px; }
+.kpi .t button:hover { color: var(--blue); }
+.kpi .v { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.kpi .v .bubble { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; color: var(--ink-2); }
+.kpi .v .bubble svg { width: 13px; height: 13px; }
+.kpi .v b { font-size: 24px; font-weight: 600; letter-spacing: -.02em; }
+.kpi .d { font-size: 11.5px; color: var(--muted); margin-top: 8px; min-height: 15px; }
+.kpi .d .up { color: var(--green); } .kpi .d .down { color: var(--red); } .kpi .d .warn { color: var(--amber); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1.25fr; gap: 16px; margin-bottom: 16px; }
+.grid2.even { grid-template-columns: 1fr 1fr; }
+.grid2.wide { grid-template-columns: 1.6fr 1fr; }
+@media (max-width: 1100px) { .grid2, .grid2.even, .grid2.wide { grid-template-columns: 1fr; } }
+.stack { display: grid; gap: 16px; align-content: start; }
+
+/* pipeline task list */
+.task { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r); background: var(--surface-2); border: 1px solid var(--border); margin-bottom: 10px; transition: background .3s, border-color .3s; }
+.task .tic { width: 34px; height: 34px; border-radius: 50%; background: #e7ebf2; color: var(--muted); display: grid; place-items: center; flex: none; transition: all .3s; }
+.task .tic svg { width: 15px; height: 15px; }
+.task > div:nth-child(2) { flex: 1; min-width: 0; }
+.task b { font-size: 13.5px; font-weight: 600; display: block; }
+.task span.c { font-family: var(--mono); font-size: 11px; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task .st { margin-left: auto; text-align: right; flex: none; max-width: 48%; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #eceff4; color: var(--muted); }
+.pill.run { background: var(--amber-soft); color: var(--amber); }
+.pill.ok { background: var(--green-soft); color: var(--green); }
+.pill.no { background: var(--red-soft); color: var(--red); }
+.pill.blue { background: var(--blue-soft); color: var(--blue); }
+.task .st small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task.running { background: #fffaf0; border-color: #f6e3bd; }
+.task.running .tic { background: var(--amber); color: #fff; animation: pulse 1s infinite; }
+.task.done { background: var(--surface); }
+.task.done .tic { background: var(--blue); color: #fff; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(217,138,11,.15); } }
+.meta-row { display: flex; gap: 18px; flex-wrap: wrap; font-size: 11.5px; color: var(--faint); padding: 6px 4px 0; }
+.meta-row div b { display: block; color: var(--ink-2); font-size: 12.5px; font-weight: 600; margin-top: 2px; }
+
+.plot { width: 100%; height: 300px; }
+.plot.tall { height: 380px; }
+.plot.short { height: 240px; }
+.empty-plot { height: 300px; display: grid; place-items: center; text-align: center; color: var(--faint); font-size: 13px; border: 1.5px dashed var(--border); border-radius: var(--r); background: var(--surface-2); }
+.empty-plot svg { width: 26px; height: 26px; color: #c3cad6; margin-bottom: 8px; }
+
+/* tables */
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.tbl th { text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted); padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tbl th:first-child { border-radius: 10px 0 0 10px; } .tbl th:last-child { border-radius: 0 10px 10px 0; }
+.tbl td { padding: 11px 12px; border-bottom: 1px solid #f0f2f6; white-space: nowrap; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl td.mono { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+#samples td.mono { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+.tbl tr.best td { background: #f4f7ff; }
+.scroll { overflow-x: auto; }
+.conf { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-left: 6px; }
+
+/* views */
+.view { display: none; }
+.view.on { display: block; animation: rise .3s ease; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.vhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 4px 0 16px; flex-wrap: wrap; }
+.vhead h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.vhead p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; max-width: 620px; line-height: 1.5; }
+.tiles { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 16px; min-width: 120px; }
+.tile small { color: var(--muted); font-size: 12px; }
+.tile b { display: block; font-size: 20px; font-weight: 600; margin-top: 4px; letter-spacing: -.02em; }
+.inline-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.inline-controls .field { min-width: 170px; }
+.note { font-size: 13px; color: var(--ink-2); line-height: 1.55; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px 14px; margin-top: 12px; }
+.note b { color: var(--blue); }
+
+/* scenario */
+.slider { display: grid; grid-template-columns: 150px 1fr 74px; gap: 12px; align-items: center; padding: 7px 0; border-bottom: 1px solid #f0f2f6; }
+.slider code { font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
+.slider input { accent-color: var(--blue); width: 100%; }
+.slider output { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--muted); }
+.sliders { max-height: 470px; overflow-y: auto; padding-right: 8px; }
+.verdict { text-align: center; padding: 22px; background: linear-gradient(180deg, var(--blue-soft), #fff); border: 1px solid #dbe4ff; border-radius: var(--r); margin-bottom: 12px; }
+.verdict small { color: var(--muted); }
+.verdict .v { font-size: 34px; font-weight: 700; color: var(--blue); letter-spacing: -.02em; margin-top: 4px; }
+
+/* code */
+.codewin { background: #0d1117; border-radius: var(--r); overflow: hidden; border: 1px solid #1d2430; }
+.codewin .bar { display: flex; align-items: center; gap: 7px; padding: 11px 14px; border-bottom: 1px solid #1d2430; color: #7d8590; font-family: var(--mono); font-size: 12px; }
+.codewin .bar i { width: 10px; height: 10px; border-radius: 50%; background: #30363d; }
+.codewin .bar span { margin-left: 8px; }
+.codewin pre { margin: 0; padding: 18px; color: #e6edf3; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; overflow-x: auto; white-space: pre; }
+.codewin .ln { color: #484f58; display: inline-block; width: 24px; user-select: none; }
+.kw { color: #ff7b72; } .cl { color: #79c0ff; } .fn { color: #d2a8ff; } .cm { color: #8b949e; }
+.term { background: #0d1117; color: #c9d1d9; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; border-radius: var(--r); padding: 16px 18px; min-height: 120px; white-space: pre-wrap; border: 1px solid #1d2430; }
+.term .ok { color: #3fb950; } .term .bad { color: #f85149; } .term .dim { color: #6e7681; }
+.explain { display: grid; gap: 10px; }
+.explain div { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: var(--r); background: var(--surface-2); border: 1px solid var(--border); font-size: 13.5px; line-height: 1.5; }
+.explain .n { width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+
+/* drawer + modal */
+.scrim { position: fixed; inset: 0; background: rgba(15,17,21,.35); backdrop-filter: blur(2px); z-index: 40; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.scrim.on { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(420px, 92vw); background: var(--surface); z-index: 50; transform: translateX(100%); transition: transform .25s ease; padding: 24px; overflow-y: auto; box-shadow: -20px 0 50px rgba(15,23,42,.15); }
+.drawer.on { transform: none; }
+.drawer h3, .modal h3 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+.drawer .sub-t, .modal .sub-t { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+.drawer .field { margin-bottom: 16px; }
+.drawer .grp { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 22px 0 12px; }
+.modal { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -46%); width: min(520px, 92vw); background: var(--surface); border-radius: var(--r-lg); padding: 26px; z-index: 50; opacity: 0; pointer-events: none; transition: all .2s; box-shadow: 0 30px 80px rgba(15,23,42,.25); }
+.modal.on { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+.modal p { line-height: 1.6; color: var(--ink-2); margin: 0 0 12px; }
+.modal .formula { font-family: var(--mono); background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 12px; }
+.close-x { position: absolute; top: 18px; right: 18px; }
+.err { display: none; background: var(--red-soft); color: #a8292d; border: 1px solid #f7c9cb; border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; opacity: 0; transition: all .25s; z-index: 60; pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+footer { text-align: center; color: var(--faint); font-size: 12.5px; padding: 10px 0 40px; }
+</style>
+</head>
+<body>
+
+<!-- ======================= LANDING ======================= -->
+<div class="landing" id="home">
+  <div class="shell">
+    <nav class="top">
+      <a class="logo" href="#home"><span class="mk" data-i="logo"></span>scikit-learn Lab</a>
+      <div class="navlinks">
+        <a href="#home">Home</a>
+        <a href="#app" data-go="dashboard">Lab</a>
+        <a href="#app" data-go="faceoff">Models</a>
+        <a href="#app" data-go="explorer">Datasets</a>
+        <a href="#app" data-go="code">Code</a>
+      </div>
+      <a class="btn dark" href="#app" data-go="dashboard">Open the Lab</a>
+      <div class="status" id="status"><i></i><span>connecting…</span></div>
+    </nav>
+    <div class="hero">
+      <div class="eyebrow">Hands-on Machine Learning</div>
+      <h1>Train, Test &amp; Tune Real Models with scikit-learn</h1>
+      <p>A local lab where every click runs real Python. Pick a dataset, choose an algorithm, and watch the four-step workflow (split, fit, predict, score) unfold with interactive charts.</p>
+      <div class="ctas">
+        <a class="btn dark" href="#app" data-go="dashboard">Start experimenting</a>
+        <a class="btn" href="#app" data-go="code">See the code</a>
+      </div>
+      <div class="chips">
+        <span title="Interactive charts" data-i="chart"></span>
+        <span title="Model tuning" data-i="sliders"></span>
+        <span title="Model face-off" data-i="trophy"></span>
+        <span title="Runs locally" data-i="rocket"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= APP ======================= -->
+<section id="app">
+  <div class="frame">
+    <aside>
+      <a class="logo" href="#home"><span class="mk" data-i="logo"></span>scikit-learn Lab</a>
+      <div class="sec">Workspace</div>
+      <div class="side-scroll">
+        <button class="nav-item active" data-view="dashboard"><span class="ic" data-i="grid"></span>Dashboard</button>
+        <button class="nav-item" data-view="explorer"><span class="ic" data-i="database"></span>Data Explorer<span class="chev" data-i="chev"></span></button>
+        <button class="nav-item" data-view="tuning"><span class="ic" data-i="sliders"></span>Tuning<span class="chev" data-i="chev"></span></button>
+        <button class="nav-item" data-view="faceoff"><span class="ic" data-i="trophy"></span>Model Face-off<span class="chev" data-i="chev"></span></button>
+        <button class="nav-item" data-view="scenario"><span class="ic" data-i="flask"></span>Scenario Lab<span class="chev" data-i="chev"></span></button>
+        <button class="nav-item" data-view="code"><span class="ic" data-i="code"></span>Code &amp; Notes<span class="chev" data-i="chev"></span></button>
+      </div>
+      <div class="sec">Datasets</div>
+      <div class="sub" id="dsList"></div>
+      <div class="side-foot"><b>Runs on your machine</b>Every chart is computed by scikit-learn on your local Python server. No data leaves your computer.</div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="avatar" id="avatar">ML</div>
+        <div class="hello"><b>Hey, Learner</b><span id="today"></span></div>
+        <div class="spacer"></div>
+        <label class="search"><span data-i="search"></span><input id="jump" placeholder="Jump to… (dataset, model or view)" list="jumpList" /><datalist id="jumpList"></datalist></label>
+        <button class="iconbtn" id="openSettings" title="Model settings"><span data-i="settings"></span></button>
+        <button class="iconbtn" id="bellBtn" title="Lab assistant"><span data-i="bell"></span><span class="dot" id="bellDot"></span></button>
+      </div>
+
+      <!-- shared configuration -->
+      <div class="card config">
+        <div class="field"><label>Dataset</label><select id="dataset"></select><div class="hint" id="dsHint"></div></div>
+        <div class="field"><label>Model</label><select id="model"></select><div class="hint" id="mdHint"></div></div>
+        <div class="field"><label>Test size</label><div class="range"><input id="testSize" type="range" min="0.05" max="0.5" step="0.05" value="0.25" /><output id="tsOut">0.25</output></div><div class="hint">Share of rows held back for testing</div></div>
+        <div class="field"><label>Seed</label><input id="seed" type="number" value="42" /><div class="hint">Same seed, same split</div></div>
+        <div class="go"><button class="btn dark" id="btnRun"><span data-i="play"></span>Run pipeline</button></div>
+      </div>
+      <div class="err" id="err"></div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="view on" id="v-dashboard">
+        <div class="alert" id="alert">
+          <div class="bell" data-i="bell"></div>
+          <div><b id="alertTitle">Welcome to the lab</b><p id="alertMsg">Pick a dataset and a model above, then press <b>Run pipeline</b>. Each of the four steps streams back live from your Python server.</p></div>
+          <button class="btn blue" id="alertBtn">Run now</button>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="t">Test Accuracy<button data-explain="accuracy" title="What is this?" data-i="expand"></button></div><div class="v"><span class="bubble" data-i="target"></span><b id="kAcc">–</b></div><div class="d" id="kAccD">Share of unseen rows predicted correctly</div></div>
+          <div class="kpi"><div class="t">F1 Score<button data-explain="f1" title="What is this?" data-i="expand"></button></div><div class="v"><span class="bubble" data-i="activity"></span><b id="kF1">–</b></div><div class="d" id="kF1D">Balance of precision and recall</div></div>
+          <div class="kpi"><div class="t">ROC AUC<button data-explain="auc" title="What is this?" data-i="expand"></button></div><div class="v"><span class="bubble" data-i="gauge"></span><b id="kAuc">–</b></div><div class="d" id="kAucD">How well it ranks the classes</div></div>
+          <div class="kpi"><div class="t">Cross-validation<button data-explain="cv" title="What is this?" data-i="expand"></button></div><div class="v"><span class="bubble" data-i="layers"></span><b id="kCv">–</b></div><div class="d" id="kCvD">Average over the training folds</div></div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="workflow"></span><div><b>Pipeline Run</b><small>The four-step workflow, streamed live.</small></div>
+              <div class="acts"><button class="minibtn" title="Re-run" id="rerun" data-i="refresh"></button></div></div>
+            <div id="tasks"></div>
+            <div class="meta-row" id="runMeta"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="chart"></span><div><b>Graphs and Analysis</b><small id="anaSub">What the model learned from the data.</small></div>
+              <div class="acts">
+                <select class="sel" id="anaSel">
+                  <option value="importance">Feature importance</option>
+                  <option value="perclass">Per-class scores</option>
+                  <option value="timing">Step timing</option>
+                </select>
+                <button class="minibtn" title="Download PNG" data-dl="anaPlot" data-i="download"></button>
+              </div></div>
+            <div id="anaPlot" class="plot"></div>
+          </div>
+        </div>
+
+        <div class="grid2 even">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="matrix"></span><div><b>Confusion Matrix</b><small>Rows: what happened · Columns: what the model said</small></div>
+              <div class="acts"><select class="sel" id="cmMode"><option value="count">Counts</option><option value="pct">Row %</option></select><button class="minibtn" title="Download PNG" data-dl="cmPlot" data-i="download"></button></div></div>
+            <div id="cmPlot" class="plot"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="trend"></span><div><b>ROC Curve</b><small>True-positive vs false-positive rate at every threshold</small></div>
+              <div class="acts"><button class="minibtn" title="Download PNG" data-dl="rocPlot" data-i="download"></button></div></div>
+            <div id="rocPlot" class="plot"></div>
+          </div>
+        </div>
+
+        <div class="grid2 wide">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="scatter"></span><div><b>Prediction Map</b><small id="pcaSub">Test rows squeezed to 2-D with PCA. ✕ marks a wrong prediction.</small></div>
+              <div class="acts"><button class="minibtn" title="Download PNG" data-dl="pcaPlot" data-i="download"></button></div></div>
+            <div id="pcaPlot" class="plot tall"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="bars"></span><div><b>Model Confidence</b><small>Is it more sure when it's right?</small></div></div>
+            <div id="confPlot" class="plot tall"></div>
+          </div>
+        </div>
+
+        <div class="grid2 wide">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="list"></span><div><b>Sample Predictions</b><small>First 10 rows the model never saw</small></div></div>
+            <div class="scroll"><table class="tbl" id="samples"><tr><th>Features (first 4)</th><th>Actual</th><th>Predicted</th></tr><tr><td colspan="3" style="color:var(--faint);text-align:center;padding:30px">Run the pipeline to fill this table</td></tr></table></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="clock"></span><div><b>Run History</b><small>Every run in this session</small></div></div>
+            <div id="histPlot" class="plot short"></div>
+            <div class="scroll"><table class="tbl" id="histTbl"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ DATA EXPLORER ============ -->
+      <div class="view" id="v-explorer">
+        <div class="vhead"><div><h2>Data Explorer</h2><p>Look before you model. See the shape of the data, how balanced the classes are, and which features separate them.</p></div></div>
+        <div class="tiles" id="exTiles"></div>
+        <div class="grid2 wide">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="scatter"></span><div><b>Feature Scatter</b><small>Pick any two features; colour shows the class</small></div></div>
+            <div class="inline-controls" style="margin-bottom:8px">
+              <div class="field"><label>X axis</label><select id="exX"></select></div>
+              <div class="field"><label>Y axis</label><select id="exY"></select></div>
+            </div>
+            <div id="exScatter" class="plot tall"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="pie"></span><div><b>Class Balance</b><small>Imbalance makes accuracy misleading</small></div></div>
+            <div id="exDonut" class="plot tall"></div>
+          </div>
+        </div>
+        <div class="grid2 even">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="bars"></span><div><b>Distribution by Class</b><small>Separated humps mean a useful feature</small></div>
+              <div class="acts"><select class="sel" id="exH"></select></div></div>
+            <div id="exHist" class="plot"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="matrix"></span><div><b>Correlation Heatmap</b><small>Which features move together</small></div></div>
+            <div id="exCorr" class="plot"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><span class="bubble" data-i="list"></span><div><b>First Rows</b><small>Raw data as the model sees it</small></div></div>
+          <div class="scroll"><table class="tbl" id="exTable"></table></div>
+        </div>
+      </div>
+
+      <!-- ============ TUNING ============ -->
+      <div class="view" id="v-tuning">
+        <div class="vhead"><div><h2>Hyperparameter Tuning</h2><p>Train the same model many times, changing one setting. Watch for the point where training accuracy keeps rising but test accuracy stalls. That gap is overfitting.</p></div></div>
+        <div class="card">
+          <div class="inline-controls" style="margin-bottom:12px">
+            <div class="field"><label>Setting to sweep</label><select id="swParam"></select></div>
+            <div class="field" style="flex:1;min-width:260px"><label>Values (comma-separated)</label><input type="text" id="swValues" /></div>
+            <div class="field"><label>&nbsp;</label><button class="btn dark" id="btnSweep"><span data-i="play"></span>Run sweep</button></div>
+          </div>
+          <div id="swPlot" class="plot tall"></div>
+          <div class="note" id="swNote">The shaded band between the two lines is the <b>generalisation gap</b>: the wider it gets, the more the model is memorising instead of learning.</div>
+        </div>
+      </div>
+
+      <!-- ============ FACE-OFF ============ -->
+      <div class="view" id="v-faceoff">
+        <div class="vhead"><div><h2>Model Face-off</h2><p>Seven algorithms, same data, same split, default settings. Only the import line changes, which is the beauty of scikit-learn's consistent API.</p></div><button class="btn dark" id="btnCompare"><span data-i="trophy"></span>Run face-off</button></div>
+        <div class="grid2 even">
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="bars"></span><div><b>Accuracy: Train vs Test</b><small>Tall train bar + short test bar = overfitting</small></div></div>
+            <div id="foBars" class="plot tall"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="bubble" data-i="scatter"></span><div><b>Accuracy vs Training Time</b><small>Top-left is the sweet spot: accurate and fast</small></div></div>
+            <div id="foScatter" class="plot tall"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><span class="bubble" data-i="trophy"></span><div><b>Leaderboard</b><small id="foSub">Press Run face-off to train all seven models</small></div></div>
+          <div class="scroll"><table class="tbl" id="board"></table></div>
+        </div>
+      </div>
+
+      <!-- ============ SCENARIO ============ -->
+      <div class="view" id="v-scenario">
+        <div class="vhead"><div><h2>Scenario Lab</h2><p>Invent a row and ask the model what it thinks. Drag a slider and the prediction updates instantly. It's a quick way to see what the model is sensitive to.</p></div><button class="btn" id="wiReset"><span data-i="refresh"></span>Reset to medians</button></div>
+        <div class="grid2 wide">
+          <div class="card"><div class="card-h"><span class="bubble" data-i="sliders"></span><div><b>Feature values</b><small id="wiSub">Defaults are each feature's median</small></div></div><div class="sliders" id="sliders"></div></div>
+          <div class="card">
+            <div class="verdict"><small>The model predicts</small><div class="v" id="wiPred">–</div></div>
+            <div id="wiPlot" class="plot short"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CODE ============ -->
+      <div class="view" id="v-code">
+        <div class="vhead"><div><h2>Code &amp; Notes</h2><p>The entire workflow fits in a handful of lines. Run it here, then copy the exact code for whatever you last trained.</p></div></div>
+        <div class="grid2 even">
+          <div class="stack">
+            <div class="codewin">
+              <div class="bar"><i></i><i></i><i></i><span>churn_model.py</span></div>
+<pre><span class="ln">1</span><span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> <span class="cl">RandomForestClassifier</span>
+<span class="ln">2</span>
+<span class="ln">3</span>model = <span class="cl">RandomForestClassifier</span>()
+<span class="ln">4</span>model.<span class="fn">fit</span>(X_train, y_train)
+<span class="ln">5</span>
+<span class="ln">6</span>preds = model.<span class="fn">predict</span>(X_test)
+<span class="ln">7</span><span class="fn">print</span>(model.<span class="fn">score</span>(X_test, y_test))</pre>
+            </div>
+            <div><button class="btn dark" id="runLive"><span data-i="play"></span>Execute script</button></div>
+            <div class="term" id="term"><span class="dim">$ press Execute to run the script on the churn dataset</span></div>
+          </div>
+          <div class="stack">
+            <div class="explain">
+              <div><span class="n">1</span><span><b>Import an algorithm.</b> A random forest is many decision trees voting together.</span></div>
+              <div><span class="n">2</span><span><b>Fit</b>: the model learns patterns from labelled history.</span></div>
+              <div><span class="n">3</span><span><b>Predict</b> on rows it has never seen.</span></div>
+              <div><span class="n">4</span><span><b>Score</b>: compare its answers with what really happened, then tune.</span></div>
+            </div>
+            <div class="card">
+              <div class="card-h"><span class="bubble" data-i="code"></span><div><b>Reproduce your last run</b><small id="codeSub">Run the pipeline to generate code</small></div>
+                <div class="acts"><button class="btn sm" id="copyCode">Copy</button></div></div>
+              <div class="codewin"><pre id="code"># Your generated code will appear here.</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+<footer>scikit-learn Lab · FastAPI + scikit-learn + Plotly · running on localhost</footer>
+
+<!-- settings drawer -->
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <button class="minibtn close-x" data-close data-i="x"></button>
+  <h3>Model settings</h3>
+  <div class="sub-t" id="drawerSub">Hyperparameters for the selected model</div>
+  <div id="paramGrid"></div>
+  <div class="grp">Validation</div>
+  <div class="field"><label>Feature scaling</label><select id="scaleSel"></select><div class="hint">Distance-based and linear models usually need it</div></div>
+  <div class="field"><label>Cross-validation folds</label><select id="cvSel"><option value="0">Off</option><option value="3">3-fold</option><option value="5" selected>5-fold</option><option value="10">10-fold</option></select><div class="hint">An extra, steadier accuracy estimate on the training set</div></div>
+  <button class="btn dark" style="width:100%;margin-top:8px" id="applyRun"><span data-i="play"></span>Apply &amp; run</button>
+</div>
+
+<!-- metric explainer -->
+<div class="modal" id="modal">
+  <button class="minibtn close-x" data-close data-i="x"></button>
+  <h3 id="mTitle"></h3><div class="sub-t" id="mSub"></div>
+  <div id="mBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================== icons ============================== */
+const ICONS = {
+  logo: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8a4 4 0 1 0 4 4"/><circle cx="12" cy="12" r="1"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/>',
+  code: '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+  chev: '<path d="m9 18 6-6-6-6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+  play: '<path d="M6 4l14 8-14 8z" fill="currentColor"/>',
+  expand: '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  gauge: '<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+  layers: '<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+  workflow: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><path d="M7 10v4a3 3 0 0 0 3 3h4"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  matrix: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/>',
+  trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  scatter: '<circle cx="7" cy="14" r="1.6"/><circle cx="11" cy="8" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="18" cy="6" r="1.6"/><path d="M3 3v18h18"/>',
+  bars: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pie: '<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  rocket: '<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  split: '<path d="M16 3h5v5M8 3H3v5M21 3l-7 7M3 3l7 7M12 22v-8"/>',
+  brain: '<path d="M12 5a3 3 0 1 0-5.9.8A4 4 0 0 0 4 13a4 4 0 0 0 4 6 3 3 0 0 0 4-1M12 5a3 3 0 1 1 5.9.8A4 4 0 0 1 20 13a4 4 0 0 1-4 6 3 3 0 0 1-4-1M12 5v13"/>',
+  wand: '<path d="m15 4-11 11 5 5L20 9z"/><path d="M15 4l5 5"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+const icon = (n) => `<svg class="i" viewBox="0 0 24 24">${ICONS[n] || ""}</svg>`;
+function paintIcons(root = document) { root.querySelectorAll("[data-i]").forEach((el) => { if (!el.dataset.painted) { el.insertAdjacentHTML("afterbegin", icon(el.dataset.i)); el.dataset.painted = 1; } }); }
+
+/* ============================== helpers ============================== */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+const pct = (x, d = 1) => (x * 100).toFixed(d);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function showErr(m) { const e = $("#err"); e.textContent = m || ""; e.style.display = m ? "block" : "none"; }
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("on"), 2200); }
+async function getJSON(url, body) {
+  const r = await fetch(url, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : undefined);
+  if (!r.ok) throw new Error((await r.text()) || r.statusText);
+  return r.json();
+}
+async function streamJSON(url, body, onEvent) {
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error((await res.text()) || res.statusText);
+  const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
+  for (;;) {
+    const { value, done } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true }); let i;
+    while ((i = buf.indexOf("\n")) >= 0) { const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1); if (line) onEvent(JSON.parse(line)); }
+  }
+}
+
+/* ============================== plotly theme ============================== */
+const C = { blue: "#1f4ff5", blue2: "#3b6dff", soft: "#d6e1ff", ink: "#0f1115", muted: "#6b7280", grid: "#eef1f6", red: "#e5484d", green: "#18a058", amber: "#d98a0b" };
+const CLASS_COLORS = ["#1f4ff5", "#f59e0b", "#14b8a6", "#e5484d", "#8b5cf6", "#0ea5e9", "#ec4899", "#84cc16", "#64748b", "#f97316"];
+const PLOT_CFG = { displaylogo: false, responsive: true, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d", "toggleSpikelines", "hoverClosestCartesian", "hoverCompareCartesian"], toImageButtonOptions: { format: "png", scale: 2 } };
+const clone = (o) => JSON.parse(JSON.stringify(o));
+function merge(a, b) { const o = clone(a); for (const k in b) o[k] = b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && o[k] && typeof o[k] === "object" ? merge(o[k], b[k]) : b[k]; return o; }
+const axis = () => ({ gridcolor: C.grid, zerolinecolor: "#e5e9f0", linecolor: "#e5e9f0", tickfont: { size: 11, color: C.muted }, title: { font: { size: 12, color: C.muted } }, automargin: true });
+function L(extra = {}) {
+  return merge({
+    font: { family: "Plus Jakarta Sans, system-ui, sans-serif", size: 12, color: "#2b313b" },
+    paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    margin: { l: 50, r: 16, t: 10, b: 44 },
+    hoverlabel: { bgcolor: "#111827", bordercolor: "#111827", font: { color: "#fff", family: "Plus Jakarta Sans, sans-serif", size: 12 } },
+    xaxis: axis(), yaxis: axis(),
+    legend: { orientation: "h", x: 0, y: 1.12, font: { size: 11.5 }, bgcolor: "rgba(0,0,0,0)" },
+    barcornerradius: 6, bargap: 0.35,
+    modebar: { bgcolor: "rgba(0,0,0,0)", color: "#b3bac6", activecolor: "#1f4ff5" },
+  }, extra);
+}
+function plot(id, data, layout) { Plotly.react(id, data, L(layout), PLOT_CFG); }
+function emptyPlot(id, msg) { const el = $("#" + id); Plotly.purge(el); el.innerHTML = `<div class="empty-plot"><div>${icon("chart")}<br>${msg}</div></div>`; }
+function clearEmpty(id) { const el = $("#" + id); const e = el.querySelector(".empty-plot"); if (e) e.remove(); }
+function P(id, data, layout) { clearEmpty(id); plot(id, data, layout); }
+
+/* ============================== state ============================== */
+let META = null, LAST = null, LAST_REQ = null, HISTORY = [];
+
+/* ============================== boot ============================== */
+async function boot() {
+  paintIcons();
+  $("#today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  try {
+    META = await getJSON("/api/meta");
+    $("#status").className = "status ok"; $("#status span").textContent = "server connected";
+  } catch (e) {
+    $("#status").className = "status bad"; $("#status span").textContent = "server offline";
+    showErr("Can't reach the Python server. Start it with:  uvicorn app:app --reload --port 8000");
+    return;
+  }
+  const dots = CLASS_COLORS;
+  Object.entries(META.datasets).forEach(([k, d], i) => {
+    $("#dataset").add(new Option(d.label, k));
+    $("#dsList").insertAdjacentHTML("beforeend", `<button data-ds="${k}"><i style="background:${dots[i % dots.length]}"></i>${esc(d.label)}</button>`);
+  });
+  Object.entries(META.models).forEach(([k, m]) => $("#model").add(new Option(m.label, k)));
+  // jump list
+  const jl = $("#jumpList");
+  ["Dashboard", "Data Explorer", "Tuning", "Model Face-off", "Scenario Lab", "Code & Notes"].forEach((v) => jl.insertAdjacentHTML("beforeend", `<option value="${v}">`));
+  Object.values(META.datasets).forEach((d) => jl.insertAdjacentHTML("beforeend", `<option value="${esc(d.label)}">`));
+  Object.values(META.models).forEach((m) => jl.insertAdjacentHTML("beforeend", `<option value="${esc(m.label)}">`));
+
+  $("#dataset").onchange = onDataset; $("#model").onchange = onModel;
+  $("#testSize").oninput = () => ($("#tsOut").textContent = (+$("#testSize").value).toFixed(2));
+  onDataset(); onModel();
+  renderTasks(); renderHistory();
+  ["anaPlot", "cmPlot", "rocPlot", "pcaPlot", "confPlot"].forEach((id) => emptyPlot(id, "Run the pipeline to draw this chart"));
+  emptyPlot("swPlot", "Choose a setting and press Run sweep");
+  emptyPlot("foBars", "Press Run face-off"); emptyPlot("foScatter", "Press Run face-off");
+}
+
+function onDataset() {
+  const k = $("#dataset").value, d = META.datasets[k];
+  $("#dsHint").textContent = d.blurb;
+  $$("#dsList button").forEach((b) => b.classList.toggle("on", b.dataset.ds === k));
+  explorerDirty = true; scenarioDirty = true;
+  if (currentView === "explorer") loadExplorer();
+  if (currentView === "scenario") buildSliders();
+}
+function onModel() {
+  const key = $("#model").value, m = META.models[key];
+  $("#mdHint").textContent = m.blurb;
+  $("#drawerSub").textContent = `Hyperparameters for ${m.label}`;
+  const g = $("#paramGrid"); g.innerHTML = "";
+  for (const [name, p] of Object.entries(m.params)) {
+    const inp = p.type === "choice"
+      ? `<select data-param="${name}">${p.options.map((o) => `<option ${o === p.default ? "selected" : ""}>${o}</option>`).join("")}</select>`
+      : `<input type="number" data-param="${name}" value="${p.default}" min="${p.min}" max="${p.max}" step="${p.type === "int" ? p.step : "any"}" />`;
+    g.insertAdjacentHTML("beforeend", `<div class="field"><label>${name}</label>${inp}<div class="hint">${p.help || (p.type === "choice" ? "" : `Range ${p.min} – ${p.max}`)}</div></div>`);
+  }
+  $("#scaleSel").innerHTML = `<option value="auto">Auto (${m.scale ? "on" : "off"} for this model)</option><option value="on">StandardScaler on</option><option value="off">Off</option>`;
+  const sp = $("#swParam"); sp.innerHTML = "";
+  for (const [n, p] of Object.entries(m.params)) if (p.type !== "choice") sp.add(new Option(n, n));
+  sp.value = m.sweep.param; $("#swValues").value = m.sweep.values.join(", ");
+  sp.onchange = () => ($("#swValues").value = sp.value === m.sweep.param ? m.sweep.values.join(", ") : suggest(m.params[sp.value]));
+  scenarioDirty = true;
+}
+function suggest(p) { const out = []; for (let i = 0; i < 7; i++) { const v = p.min + (p.max - p.min) * (i / 6); out.push(p.type === "int" ? Math.round(v) : +v.toPrecision(3)); } return [...new Set(out)].join(", "); }
+function readParams() { const o = {}; $$("[data-param]").forEach((el) => (o[el.dataset.param] = el.type === "number" ? Number(el.value) : el.value)); return o; }
+function currentReq() {
+  const s = $("#scaleSel").value;
+  return {
+    dataset: $("#dataset").value, model: $("#model").value,
+    test_size: +(+$("#testSize").value).toFixed(2), random_state: parseInt($("#seed").value || "42", 10),
+    params: readParams(), scale: s === "auto" ? null : s === "on", cv_folds: parseInt($("#cvSel").value, 10),
+  };
+}
+function busy(on) { $$("#btnRun, #btnSweep, #btnCompare, #applyRun, #rerun, #alertBtn").forEach((b) => (b.disabled = on)); }
+
+/* ============================== navigation ============================== */
+let currentView = "dashboard", explorerDirty = true, scenarioDirty = true;
+function go(view) {
+  currentView = view;
+  $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+  $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + view));
+  if (view === "explorer" && explorerDirty) loadExplorer();
+  if (view === "scenario" && scenarioDirty) buildSliders();
+  setTimeout(() => $$("#v-" + view + " .js-plotly-plot").forEach((p) => Plotly.Plots.resize(p)), 60);
+}
+$$(".nav-item").forEach((b) => (b.onclick = () => go(b.dataset.view)));
+$$("[data-go]").forEach((a) => a.addEventListener("click", () => go(a.dataset.go)));
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("#dsList button"); if (!b) return;
+  $("#dataset").value = b.dataset.ds; onDataset(); toast(`Dataset: ${META.datasets[b.dataset.ds].label}`);
+});
+$("#jump").addEventListener("change", (e) => {
+  const v = e.target.value.trim().toLowerCase(); e.target.value = "";
+  const views = { "dashboard": "dashboard", "data explorer": "explorer", "tuning": "tuning", "model face-off": "faceoff", "scenario lab": "scenario", "code & notes": "code" };
+  if (views[v]) return go(views[v]);
+  for (const [k, d] of Object.entries(META.datasets)) if (d.label.toLowerCase() === v) { $("#dataset").value = k; onDataset(); return toast("Dataset switched"); }
+  for (const [k, m] of Object.entries(META.models)) if (m.label.toLowerCase() === v) { $("#model").value = k; onModel(); return toast("Model switched"); }
+});
+
+/* drawer & modal */
+function openLayer(id) { $("#scrim").classList.add("on"); $("#" + id).classList.add("on"); }
+function closeLayers() { $("#scrim").classList.remove("on"); $$(".drawer, .modal").forEach((x) => x.classList.remove("on")); }
+$("#openSettings").onclick = () => openLayer("drawer");
+$("#scrim").onclick = closeLayers;
+$$("[data-close]").forEach((b) => (b.onclick = closeLayers));
+document.addEventListener("keydown", (e) => e.key === "Escape" && closeLayers());
+$("#applyRun").onclick = () => { closeLayers(); go("dashboard"); runPipeline(); };
+$("#bellBtn").onclick = () => { go("dashboard"); $("#bellDot").style.display = "none"; $("#alert").scrollIntoView({ behavior: "smooth", block: "center" }); };
+
+const EXPLAIN = {
+  accuracy: ["Accuracy", "The simplest score", "<p>Out of every row the model had never seen, what share did it get right?</p><div class='formula'>accuracy = correct predictions / all predictions</div><p>Watch out: if 95% of customers stay, a model that always says \"stayed\" scores 95% while being useless. That's why we also check F1 and AUC.</p>"],
+  f1: ["F1 score", "Balancing two kinds of mistakes", "<p><b>Precision</b>: when the model says \"churned\", how often is it right?<br><b>Recall</b>: of all customers who really churned, how many did it catch?</p><div class='formula'>F1 = 2 × precision × recall / (precision + recall)</div><p>F1 is high only when both are high. For multi-class data we average F1 across classes (macro).</p>"],
+  auc: ["ROC AUC", "Ranking quality, threshold-free", "<p>Pick one positive and one negative row at random. AUC is the chance the model gives the positive one a higher score.</p><div class='formula'>0.5 = coin flip · 1.0 = perfect ranking</div><p>It needs predicted probabilities, so it is shown for every model that can produce them.</p>"],
+  cv: ["Cross-validation", "A steadier estimate", "<p>The training set is cut into <i>k</i> folds. The model trains on k−1 folds and is tested on the remaining one, k times over.</p><div class='formula'>CV score = mean of the k fold accuracies (± spread)</div><p>A small spread means the result doesn't depend on a lucky split. Set the number of folds in Model settings.</p>"],
+};
+$$("[data-explain]").forEach((b) => (b.onclick = () => {
+  const [t, s, body] = EXPLAIN[b.dataset.explain];
+  $("#mTitle").textContent = t; $("#mSub").textContent = s; $("#mBody").innerHTML = body; openLayer("modal");
+}));
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-dl]"); if (!b) return;
+  const el = $("#" + b.dataset.dl); if (el && el.data) Plotly.downloadImage(el, { format: "png", scale: 2, filename: b.dataset.dl });
+});
+
+/* ============================== pipeline ============================== */
+const STEPS = [
+  { t: "Load & split", c: "train_test_split(X, y)", i: "split" },
+  { t: "Fit", c: "model.fit(X_train, y_train)", i: "brain" },
+  { t: "Predict", c: "model.predict(X_test)", i: "wand" },
+  { t: "Score & tune", c: "model.score(X_test, y_test)", i: "target" },
+];
+function renderTasks() {
+  $("#tasks").innerHTML = STEPS.map((s, i) => `<div class="task" data-s="${i + 1}"><div class="tic">${icon(s.i)}</div><div><b>${s.t}</b><span class="c">${s.c}</span></div><div class="st"><span class="pill">Waiting</span><small></small></div></div>`).join("");
+  $("#runMeta").innerHTML = "";
+}
+function setTask(n, state, info) {
+  const el = $(`.task[data-s="${n}"]`); if (!el) return;
+  el.className = "task " + state;
+  el.querySelector(".pill").className = "pill " + (state === "done" ? "ok" : state === "running" ? "run" : "");
+  el.querySelector(".pill").innerHTML = state === "done" ? icon("check") + "Done" : state === "running" ? "Running" : "Waiting";
+  el.querySelector("small").textContent = info || "";
+}
+
+$("#btnRun").onclick = runPipeline;
+$("#rerun").onclick = runPipeline;
+$("#alertBtn").onclick = () => alertAction();
+let alertAction = runPipeline;
+
+async function runPipeline() {
+  showErr(""); busy(true); renderTasks(); setTask(1, "running");
+  if (currentView !== "dashboard") go("dashboard");
+  const req = currentReq(); LAST_REQ = req;
+  try {
+    await streamJSON("/api/run", req, (e) => {
+      if (e.event === "step") { setTask(e.step, "done", `${e.ms.toFixed(1)} ms`); $(`.task[data-s="${e.step}"]`).title = e.info; if (e.step < 4) setTask(e.step + 1, "running"); }
+      if (e.event === "done") { LAST = e; renderRun(e, req); }
+    });
+  } catch (e) { showErr(e.message); renderTasks(); }
+  busy(false);
+}
+
+function renderRun(r, req) {
+  const dsLabel = META.datasets[req.dataset].label, mLabel = META.models[req.model].label;
+  const gap = r.train_accuracy - r.accuracy;
+  // KPIs
+  $("#kAcc").textContent = pct(r.accuracy) + "%";
+  $("#kAccD").innerHTML = `${r.correct} of ${r.test_rows} correct · train <span class="${gap > 0.04 ? "warn" : "up"}">${pct(r.train_accuracy)}%</span>`;
+  $("#kF1").textContent = r.metrics.f1.toFixed(3);
+  $("#kF1D").textContent = `Precision ${r.metrics.precision.toFixed(2)} · Recall ${r.metrics.recall.toFixed(2)}${r.average === "macro" ? " (macro)" : ""}`;
+  $("#kAuc").textContent = r.metrics.roc_auc != null ? r.metrics.roc_auc.toFixed(3) : "n/a";
+  $("#kAucD").textContent = r.metrics.roc_auc != null ? (r.metrics.roc_auc > 0.9 ? "Excellent separation" : r.metrics.roc_auc > 0.8 ? "Good separation" : "Room to improve") : "Model gives no probabilities";
+  if (r.cv) { $("#kCv").textContent = pct(r.cv.mean) + "%"; $("#kCvD").textContent = `± ${pct(r.cv.std)}% across ${r.cv.folds.length} folds`; }
+  else { $("#kCv").textContent = "off"; $("#kCvD").textContent = "Enable in Model settings"; }
+
+  // alert
+  const hl = (t, good) => `<span class="hl ${good ? "good" : ""}">[${esc(t)}]</span>`;
+  $("#bellDot").style.display = "block";
+  if (gap > 0.10) {
+    $("#alertTitle").textContent = "Overfitting detected";
+    $("#alertMsg").innerHTML = `${hl(mLabel)} scores ${pct(r.train_accuracy)}% on training data but only ${pct(r.accuracy)}% on unseen data. That's a ${pct(gap, 0)}-point gap.`;
+    $("#alertBtn").textContent = "Tune it"; alertAction = () => go("tuning");
+  } else if (gap > 0.04) {
+    $("#alertTitle").textContent = "Mild overfitting";
+    $("#alertMsg").innerHTML = `We've observed a ${pct(gap, 0)}-point gap between training and test accuracy for ${hl(mLabel)}. A shallower or more regularised model may generalise better.`;
+    $("#alertBtn").textContent = "Try tuning"; alertAction = () => go("tuning");
+  } else {
+    $("#alertTitle").textContent = "Healthy model";
+    $("#alertMsg").innerHTML = `${hl(mLabel, true)} reached ${pct(r.accuracy)}% on unseen ${esc(dsLabel)} rows, with training and test scores in agreement. See how other algorithms compare.`;
+    $("#alertBtn").textContent = "Compare models"; alertAction = () => { go("faceoff"); runCompare(); };
+  }
+
+  $("#runMeta").innerHTML = [["Dataset", dsLabel], ["Model", mLabel], ["Train / test", `${r.train_rows} / ${r.test_rows}`], ["Features", r.n_features], ["Scaling", r.scaled ? "StandardScaler" : "None"]]
+    .map(([k, v]) => `<div>${k}<b>${esc(v)}</b></div>`).join("");
+
+  drawAnalysis(); drawCM(); drawROC(); drawPCA(); drawConf(); drawSamples();
+  HISTORY.push({ n: HISTORY.length + 1, ds: dsLabel, model: mLabel, acc: r.accuracy, train: r.train_accuracy, f1: r.metrics.f1 });
+  renderHistory();
+  $("#code").textContent = r.code;
+  $("#codeSub").textContent = `${mLabel} on ${dsLabel}`;
+  scenarioDirty = true;
+}
+
+/* -------- dashboard charts -------- */
+function drawAnalysis() {
+  if (!LAST) return;
+  const mode = $("#anaSel").value, r = LAST;
+  if (mode === "importance") {
+    const top = [...r.importance.top].reverse();
+    const max = Math.max(...top.map((t) => t.importance));
+    $("#anaSub").textContent = `Which features the model leans on · ${r.importance.kind}`;
+    P("anaPlot", [{ type: "bar", orientation: "h", y: top.map((t) => t.feature), x: top.map((t) => t.importance),
+      marker: { color: top.map((t) => (t.importance === max ? C.blue : C.soft)) },
+      text: top.map((t) => pct(t.importance) + "%"), textposition: "outside", textfont: { size: 11, color: C.muted }, cliponaxis: false,
+      hovertemplate: "<b>%{y}</b><br>%{x:.1%} of the decision<extra></extra>" }],
+      { xaxis: { tickformat: ".0%", showgrid: true }, yaxis: { showgrid: false }, margin: { l: 130, r: 40 }, bargap: 0.3 });
+  } else if (mode === "perclass") {
+    const pc = r.visuals.per_class;
+    $("#anaSub").textContent = "Precision, recall and F1 for every class";
+    const mk = (k, c) => ({ type: "bar", name: k[0].toUpperCase() + k.slice(1), x: pc.map((p) => p.label), y: pc.map((p) => p[k]), marker: { color: c }, hovertemplate: `%{x}<br>${k}: %{y:.3f}<extra></extra>` });
+    P("anaPlot", [mk("precision", C.soft), mk("recall", "#8fb0ff"), mk("f1", C.blue)], { barmode: "group", yaxis: { range: [0, 1.05], tickformat: ".0%" }, bargap: 0.25, bargroupgap: 0.08 });
+  } else {
+    const t = r.timing, names = ["split", "fit", "predict", "score"], vals = names.map((n) => t[n]);
+    const max = Math.max(...vals);
+    $("#anaSub").textContent = `Milliseconds per step · total ${(vals.reduce((a, b) => a + b, 0)).toFixed(1)} ms`;
+    P("anaPlot", [{ type: "bar", x: names, y: vals, marker: { color: vals.map((v) => (v === max ? C.blue : C.soft)) },
+      text: vals.map((v) => v.toFixed(1)), textposition: "outside", cliponaxis: false, textfont: { size: 11, color: C.muted },
+      hovertemplate: "%{x}: %{y:.1f} ms<extra></extra>" }], { yaxis: { title: { text: "ms" } }, bargap: 0.45 });
+  }
+}
+$("#anaSel").onchange = drawAnalysis;
+
+function drawCM() {
+  if (!LAST) return;
+  const { labels, matrix } = LAST.confusion, mode = $("#cmMode").value;
+  const z = mode === "pct" ? matrix.map((row) => { const s = row.reduce((a, b) => a + b, 0) || 1; return row.map((v) => v / s); }) : matrix;
+  const many = labels.length > 6;
+  P("cmPlot", [{ type: "heatmap", z, x: labels.map((l) => "pred " + l), y: labels, colorscale: [[0, "#f5f7fc"], [0.5, "#9fb8ff"], [1, C.blue]], showscale: false, xgap: 3, ygap: 3,
+    texttemplate: mode === "pct" ? "%{z:.0%}" : "%{z}", textfont: { size: many ? 10 : 14 },
+    hovertemplate: "Actual <b>%{y}</b> → predicted <b>%{x}</b><br>" + (mode === "pct" ? "%{z:.1%} of the row" : "%{z} rows") + "<extra></extra>" }],
+    { yaxis: { autorange: "reversed", showgrid: false, title: { text: "actual" } }, xaxis: { showgrid: false, side: "top" }, margin: { t: 30, l: 70, b: 20 } });
+}
+$("#cmMode").onchange = drawCM;
+
+function drawROC() {
+  const roc = LAST && LAST.visuals.roc;
+  if (!roc || !roc.length) return emptyPlot("rocPlot", "This model doesn't output probabilities");
+  const traces = roc.map((c, i) => ({ type: "scatter", mode: "lines", x: c.fpr, y: c.tpr, name: `${c.label} · AUC ${c.auc.toFixed(3)}`,
+    line: { color: roc.length === 1 ? C.blue : CLASS_COLORS[i % 10], width: 2.5, shape: "hv" }, fill: roc.length === 1 ? "tozeroy" : "none", fillcolor: "rgba(31,79,245,.08)",
+    hovertemplate: "FPR %{x:.2f} · TPR %{y:.2f}<extra>" + esc(c.label) + "</extra>" }));
+  traces.push({ type: "scatter", mode: "lines", x: [0, 1], y: [0, 1], name: "Random guess", line: { color: "#c3cad6", dash: "dot", width: 1.5 }, hoverinfo: "skip" });
+  P("rocPlot", traces, { xaxis: { title: { text: "False positive rate" }, range: [0, 1] }, yaxis: { title: { text: "True positive rate" }, range: [0, 1.02] }, legend: { y: 1.18 }, margin: { t: roc.length > 3 ? 50 : 24 } });
+}
+
+function drawPCA() {
+  const p = LAST.visuals.pca, classes = META.datasets[LAST_REQ.dataset].classes;
+  const traces = classes.map((cls, i) => {
+    const idx = p.actual.map((a, j) => (a === cls && p.predicted[j] === cls ? j : -1)).filter((j) => j >= 0);
+    return { type: "scattergl", mode: "markers", name: cls, x: idx.map((j) => p.x[j]), y: idx.map((j) => p.y[j]),
+      marker: { color: CLASS_COLORS[i % 10], size: 8, opacity: 0.75, line: { color: "#fff", width: 1 } },
+      hovertemplate: `Actual <b>${esc(cls)}</b> · predicted correctly<extra></extra>` };
+  });
+  const wrong = p.actual.map((a, j) => (a !== p.predicted[j] ? j : -1)).filter((j) => j >= 0);
+  traces.push({ type: "scatter", mode: "markers", name: `Wrong (${wrong.length})`, x: wrong.map((j) => p.x[j]), y: wrong.map((j) => p.y[j]),
+    customdata: wrong.map((j) => [p.actual[j], p.predicted[j]]),
+    marker: { symbol: "x-thin-open", size: 12, color: C.red, line: { width: 2.5, color: C.red } },
+    hovertemplate: "Actual <b>%{customdata[0]}</b><br>Predicted <b>%{customdata[1]}</b><extra>mistake</extra>" });
+  $("#pcaSub").textContent = `Test rows squeezed to 2-D with PCA (keeps ${pct(p.explained[0] + p.explained[1], 0)}% of the variation). ✕ marks a wrong prediction.`;
+  P("pcaPlot", traces, { xaxis: { title: { text: `PC1 (${pct(p.explained[0], 0)}%)` }, zeroline: false }, yaxis: { title: { text: `PC2 (${pct(p.explained[1], 0)}%)` }, zeroline: false }, legend: { y: 1.1 }, margin: { t: 30 } });
+}
+
+function drawConf() {
+  const v = LAST.visuals;
+  if (!v.confidence) return emptyPlot("confPlot", "This model doesn't output probabilities");
+  const right = v.confidence.filter((_, i) => v.correct[i]), wrong = v.confidence.filter((_, i) => !v.correct[i]);
+  const bins = { start: 0, end: 1.0001, size: 0.05 };
+  P("confPlot", [
+    { type: "histogram", x: right, name: `Correct (${right.length})`, xbins: bins, marker: { color: C.blue }, opacity: 0.85, hovertemplate: "%{x} confidence<br>%{y} correct rows<extra></extra>" },
+    { type: "histogram", x: wrong, name: `Wrong (${wrong.length})`, xbins: bins, marker: { color: C.red }, opacity: 0.85, hovertemplate: "%{x} confidence<br>%{y} wrong rows<extra></extra>" },
+  ], { barmode: "stack", xaxis: { title: { text: "Model confidence" }, tickformat: ".0%", range: [Math.max(0, Math.min(...v.confidence) - 0.05), 1.02] }, yaxis: { title: { text: "rows" } }, bargap: 0.08, legend: { y: 1.1 }, margin: { t: 30 } });
+}
+
+function drawSamples() {
+  $("#samples").innerHTML = `<tr><th>Features (first 4)</th><th>Actual</th><th>Predicted</th></tr>` + LAST.samples.map((s) => {
+    const ok = s.actual === s.predicted;
+    return `<tr><td class="mono">${esc(s.features)}</td><td><b>${esc(s.actual)}</b></td><td><span class="pill ${ok ? "ok" : "no"}">${ok ? icon("check") : icon("x")}${esc(s.predicted)}</span>${s.confidence != null ? `<span class="conf">${pct(s.confidence, 0)}%</span>` : ""}</td></tr>`;
+  }).join("");
+}
+
+function renderHistory() {
+  if (!HISTORY.length) { emptyPlot("histPlot", "Your runs will be tracked here"); $("#histTbl").innerHTML = ""; return; }
+  P("histPlot", [
+    { type: "scatter", mode: "lines+markers", name: "Test", x: HISTORY.map((h) => "#" + h.n), y: HISTORY.map((h) => h.acc), line: { color: C.blue, width: 2.5, shape: "spline" }, marker: { size: 8, color: "#fff", line: { color: C.blue, width: 2 } },
+      customdata: HISTORY.map((h) => [h.model, h.ds]), hovertemplate: "<b>%{customdata[0]}</b><br>%{customdata[1]}<br>test %{y:.1%}<extra></extra>" },
+    { type: "scatter", mode: "lines", name: "Train", x: HISTORY.map((h) => "#" + h.n), y: HISTORY.map((h) => h.train), line: { color: "#b8c8f8", width: 2, dash: "dot", shape: "spline" }, hovertemplate: "train %{y:.1%}<extra></extra>" },
+  ], { xaxis: { type: "category" }, yaxis: { tickformat: ".0%" }, margin: { t: 26, b: 30 }, legend: { y: 1.18 } });
+  $("#histTbl").innerHTML = `<tr><th>#</th><th>Run</th><th>Test</th></tr>` +
+    [...HISTORY].reverse().slice(0, 5).map((h) => `<tr><td>${h.n}</td><td><b style="font-weight:600">${esc(h.model.replace("Classifier", ""))}</b><br><span style="color:var(--faint);font-size:11.5px">${esc(h.ds)}</span></td><td><b>${pct(h.acc)}%</b></td></tr>`).join("");
+}
+
+/* ============================== explorer ============================== */
+let EX = null;
+async function loadExplorer() {
+  explorerDirty = false;
+  const k = $("#dataset").value, d = META.datasets[k];
+  try {
+    EX = await getJSON(`/api/preview/${k}`);
+    const counts = EX.class_counts, vals = Object.values(counts);
+    const ratio = Math.max(...vals) / Math.min(...vals);
+    $("#exTiles").innerHTML = [["Rows", EX.shape[0]], ["Features", EX.shape[1]], ["Classes", d.classes.length], ["Missing values", EX.missing], ["Imbalance ratio", ratio.toFixed(1) + " : 1"]]
+      .map(([a, b]) => `<div class="tile"><small>${a}</small><b>${b}</b></div>`).join("");
+    const opts = d.features.map((f) => `<option>${esc(f)}</option>`).join("");
+    $("#exX").innerHTML = opts; $("#exY").innerHTML = opts; $("#exH").innerHTML = opts;
+    // pick the two most important-looking defaults: first & second, or LAST importance if same dataset
+    let f1 = d.features[0], f2 = d.features[1] || d.features[0];
+    if (LAST && LAST_REQ && LAST_REQ.dataset === k && LAST.importance.top.length > 1) { f1 = LAST.importance.top[0].feature; f2 = LAST.importance.top[1].feature; }
+    $("#exX").value = f1; $("#exY").value = f2; $("#exH").value = f1;
+    $("#exTable").innerHTML = `<tr>${EX.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr>` + EX.rows.map((r) => `<tr>${r.map((v, i) => `<td class="${i === r.length - 1 ? "" : "mono"}">${i === r.length - 1 ? `<span class="pill blue">${esc(v)}</span>` : esc(v)}</td>`).join("")}</tr>`).join("");
+    P("exDonut", [{ type: "pie", hole: 0.62, labels: Object.keys(counts), values: vals, sort: false, marker: { colors: CLASS_COLORS, line: { color: "#fff", width: 3 } },
+      textinfo: "percent", textfont: { size: 12, color: "#fff" }, hovertemplate: "<b>%{label}</b><br>%{value} rows · %{percent}<extra></extra>" }],
+      { showlegend: true, legend: { orientation: "h", y: -0.08, x: 0.5, xanchor: "center" }, margin: { t: 10, b: 10, l: 10, r: 10 },
+        annotations: [{ text: `<b>${EX.shape[0]}</b><br><span style="font-size:11px;color:#6b7280">rows</span>`, showarrow: false, font: { size: 22 } }] });
+    await drawExplorerCharts(true);
+  } catch (e) { showErr(e.message); }
+}
+async function drawExplorerCharts(withCorr) {
+  const k = $("#dataset").value, x = $("#exX").value, y = $("#exY").value, h = $("#exH").value;
+  const d = await getJSON(`/api/columns/${k}?x=${encodeURIComponent(x)}&y=${encodeURIComponent(y)}&hist=${encodeURIComponent(h)}`);
+  P("exScatter", d.classes.map((c, i) => {
+    const idx = d.label.map((l, j) => (l === c ? j : -1)).filter((j) => j >= 0);
+    return { type: "scattergl", mode: "markers", name: c, x: idx.map((j) => d.x[j]), y: idx.map((j) => d.y[j]), marker: { color: CLASS_COLORS[i % 10], size: 7, opacity: 0.7, line: { color: "#fff", width: 0.8 } }, hovertemplate: `<b>${esc(c)}</b><br>${esc(x)}: %{x}<br>${esc(y)}: %{y}<extra></extra>` };
+  }), { xaxis: { title: { text: x } }, yaxis: { title: { text: y } }, legend: { y: 1.1 }, margin: { t: 30 } });
+  P("exHist", d.classes.map((c, i) => ({ type: "histogram", name: c, x: d.hist.filter((_, j) => d.label[j] === c), opacity: 0.65, marker: { color: CLASS_COLORS[i % 10] }, nbinsx: 30, hovertemplate: `${esc(c)}<br>%{x}: %{y} rows<extra></extra>` })),
+    { barmode: "overlay", xaxis: { title: { text: h } }, yaxis: { title: { text: "rows" } }, bargap: 0.05, legend: { y: 1.14 }, margin: { t: 30 } });
+  if (withCorr) {
+    if (d.corr) {
+      P("exCorr", [{ type: "heatmap", z: d.corr.z, x: d.corr.cols, y: d.corr.cols, zmin: -1, zmax: 1, colorscale: [[0, "#e5484d"], [0.5, "#f7f8fb"], [1, C.blue]], xgap: 1, ygap: 1,
+        colorbar: { thickness: 10, outlinewidth: 0, tickfont: { size: 10 } }, hovertemplate: "%{y} × %{x}<br>r = %{z:.2f}<extra></extra>" }],
+        { xaxis: { showgrid: false, tickangle: -45, tickfont: { size: d.corr.cols.length > 12 ? 8 : 10 } }, yaxis: { showgrid: false, autorange: "reversed", tickfont: { size: d.corr.cols.length > 12 ? 8 : 10 } }, margin: { l: 110, b: 90, t: 10 } });
+    } else emptyPlot("exCorr", "Too many features for a readable heatmap");
+  }
+}
+["#exX", "#exY", "#exH"].forEach((s) => ($(s).onchange = () => drawExplorerCharts(false)));
+
+/* ============================== tuning ============================== */
+$("#btnSweep").onclick = runSweep;
+async function runSweep() {
+  showErr(""); busy(true);
+  const req = currentReq(), param = $("#swParam").value;
+  const values = $("#swValues").value.split(",").map((v) => parseFloat(v.trim())).filter((v) => !isNaN(v));
+  const pts = [];
+  const logX = values.length > 2 && Math.min(...values) > 0 && Math.max(...values) / Math.min(...values) > 100;
+  const draw = () => {
+    const xs = pts.map((p) => p.value);
+    const best = pts.length ? pts.reduce((a, b) => (b.test > a.test ? b : a)) : null;
+    P("swPlot", [
+      { type: "scatter", mode: "lines+markers", name: "Test (unseen data)", x: xs, y: pts.map((p) => p.test), line: { color: C.blue, width: 3, shape: "spline" }, marker: { size: 9, color: "#fff", line: { color: C.blue, width: 2.5 } }, hovertemplate: `${param}=%{x}<br>test %{y:.1%}<extra></extra>` },
+      { type: "scatter", mode: "lines+markers", name: "Train", x: xs, y: pts.map((p) => p.train), fill: "tonexty", fillcolor: "rgba(229,72,77,.08)", line: { color: "#f08a8d", width: 2, dash: "dot", shape: "spline" }, marker: { size: 6, color: "#f08a8d" }, hovertemplate: `${param}=%{x}<br>train %{y:.1%}<extra></extra>` },
+    ], {
+      xaxis: { title: { text: param + (logX ? " (log scale)" : "") }, type: logX ? "log" : "linear" }, yaxis: { tickformat: ".0%", title: { text: "accuracy" } }, legend: { y: 1.1 }, margin: { t: 30 },
+      annotations: best ? [{ x: logX ? Math.log10(best.value) : best.value, y: best.test, text: `best ${pct(best.test)}%`, showarrow: true, arrowhead: 0, ax: 0, ay: -34, bgcolor: "#111827", font: { color: "#fff", size: 11 }, borderpad: 5 }] : [],
+    });
+  };
+  try {
+    await streamJSON("/api/sweep", { ...req, param, values }, (e) => {
+      if (e.event === "point") { pts.push(e); draw(); }
+      if (e.event === "done" && e.best) $("#swNote").innerHTML = `Best test accuracy <b>${pct(e.best.test)}%</b> at <code>${param} = ${e.best.value}</code>. The shaded band is the <b>generalisation gap</b>: where it widens, the model is memorising rather than learning. Set this value in Model settings (gear icon) and re-run.`;
+    });
+  } catch (e) { showErr(e.message); }
+  busy(false);
+}
+
+/* ============================== face-off ============================== */
+$("#btnCompare").onclick = runCompare;
+async function runCompare() {
+  showErr(""); busy(true);
+  const rows = [];
+  const draw = () => {
+    const s = [...rows].sort((a, b) => b.test - a.test), best = s[0];
+    P("foBars", [
+      { type: "bar", name: "Test", y: s.map((r) => r.label), x: s.map((r) => r.test), orientation: "h", marker: { color: s.map((r) => (r === best ? C.blue : "#8fb0ff")) }, hovertemplate: "%{y}<br>test %{x:.1%}<extra></extra>" },
+      { type: "bar", name: "Train", y: s.map((r) => r.label), x: s.map((r) => r.train), orientation: "h", marker: { color: "#e3e9f7" }, hovertemplate: "%{y}<br>train %{x:.1%}<extra></extra>" },
+    ], { barmode: "group", xaxis: { tickformat: ".0%", range: [Math.max(0, Math.min(...rows.map((r) => r.test)) - 0.1), 1.01] }, yaxis: { autorange: "reversed", showgrid: false }, margin: { l: 190, t: 30 }, legend: { y: 1.1 }, bargap: 0.3 });
+    P("foScatter", [{ type: "scatter", mode: "markers+text", x: rows.map((r) => Math.max(r.fit_ms, 0.1)), y: rows.map((r) => r.test), text: rows.map((r) => r.model.replace("Classifier", "")), textposition: "top center", textfont: { size: 10.5, color: C.muted },
+      marker: { size: rows.map((r) => 10 + r.f1 * 18), color: rows.map((r) => (r === best ? C.blue : "#8fb0ff")), line: { color: "#fff", width: 2 } },
+      customdata: rows.map((r) => [r.label, r.f1]), hovertemplate: "<b>%{customdata[0]}</b><br>test %{y:.1%}<br>fit %{x:.1f} ms<br>F1 %{customdata[1]:.3f}<extra></extra>" }],
+      { xaxis: { type: "log", title: { text: "fit time (ms, log scale)" } }, yaxis: { tickformat: ".0%", title: { text: "test accuracy" } }, showlegend: false, margin: { t: 20 } });
+    $("#board").innerHTML = `<tr><th>#</th><th>Model</th><th>Test</th><th>Train</th><th>Gap</th><th>F1 (macro)</th><th>Fit time</th><th></th></tr>` +
+      s.map((r, i) => { const g = r.train - r.test; return `<tr class="${r === best ? "best" : ""}"><td>${i + 1}</td><td><b>${esc(r.label)}</b> ${r.scaled ? '<span class="pill">scaled</span>' : ""}</td><td><b>${pct(r.test)}%</b></td><td>${pct(r.train)}%</td><td><span class="pill ${g > 0.1 ? "no" : g > 0.04 ? "run" : "ok"}">${pct(g, 1)} pts</span></td><td>${r.f1.toFixed(3)}</td><td class="mono">${r.fit_ms.toFixed(0)} ms</td><td><button class="btn sm" data-use="${r.model}">Use</button></td></tr>`; }).join("");
+  };
+  $("#foSub").textContent = "Training each model…";
+  try {
+    await streamJSON("/api/compare", currentReq(), (e) => {
+      if (e.event === "row") { rows.push(e); draw(); }
+      if (e.event === "done") $("#foSub").textContent = `${META.datasets[$("#dataset").value].label} · winner: ${[...rows].sort((a, b) => b.test - a.test)[0].label}`;
+    });
+  } catch (e) { showErr(e.message); }
+  busy(false);
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-use]"); if (!b) return;
+  $("#model").value = b.dataset.use; onModel(); go("dashboard"); runPipeline();
+});
+
+/* ============================== scenario ============================== */
+let wiTimer = null;
+function buildSliders() {
+  scenarioDirty = false;
+  const d = META.datasets[$("#dataset").value], feats = d.features.slice(0, 20);
+  $("#wiSub").textContent = `Defaults are each feature's median${d.features.length > 20 ? ` · showing 20 of ${d.features.length}; the rest stay at median` : ""}`;
+  $("#sliders").innerHTML = feats.map((f) => {
+    const [mn, med, mx] = d.feature_ranges[f], step = (mx - mn) / 100 || 0.01;
+    return `<div class="slider"><code title="${esc(f)}">${esc(f)}</code><input type="range" min="${mn}" max="${mx}" step="${step}" value="${med}" data-f="${esc(f)}" data-med="${med}" /><output>${(+med).toFixed(2)}</output></div>`;
+  }).join("");
+  $$("#sliders input").forEach((s) => (s.oninput = () => { s.nextElementSibling.textContent = (+s.value).toFixed(2); clearTimeout(wiTimer); wiTimer = setTimeout(whatIf, 160); }));
+  whatIf();
+}
+$("#wiReset").onclick = () => { $$("#sliders input").forEach((s) => { s.value = s.dataset.med; s.nextElementSibling.textContent = (+s.dataset.med).toFixed(2); }); whatIf(); };
+async function whatIf() {
+  const row = {}; $$("#sliders input").forEach((s) => (row[s.dataset.f] = +s.value));
+  try {
+    const r = await getJSON("/api/predict", { ...currentReq(), row });
+    $("#wiPred").textContent = r.predicted;
+    if (r.proba) {
+      const max = Math.max(...r.proba);
+      P("wiPlot", [{ type: "bar", orientation: "h", y: r.classes, x: r.proba, marker: { color: r.proba.map((p) => (p === max ? C.blue : C.soft)) },
+        text: r.proba.map((p) => pct(p, 0) + "%"), textposition: "outside", cliponaxis: false, textfont: { size: 11, color: C.muted }, hovertemplate: "%{y}: %{x:.1%}<extra></extra>" }],
+        { xaxis: { range: [0, 1.12], tickformat: ".0%" }, yaxis: { autorange: "reversed", showgrid: false }, margin: { l: 90, t: 10 } });
+    } else emptyPlot("wiPlot", "This model gives no probabilities");
+  } catch (e) { $("#wiPred").textContent = "error"; }
+}
+
+/* ============================== code ============================== */
+$("#runLive").onclick = async () => {
+  const t = $("#term"), b = $("#runLive"); b.disabled = true;
+  t.innerHTML = `$ python churn_model.py\n<span class="dim">training…</span>`;
+  try {
+    const r = await getJSON("/api/quickrun", { dataset: "churn" });
+    let s = `$ python churn_model.py\n\n${r.score.toFixed(4)}\n<span class="dim"># ${pct(r.score)}% accurate on ${r.test_rows} unseen customers</span>\n\nFirst 5 predictions vs reality:\n`;
+    t.innerHTML = s;
+    for (const p of r.first5) { await sleep(150); const ok = p.pred === p.actual; s += `<span class="${ok ? "ok" : "bad"}">${ok ? "✓" : "✗"}</span> predicted ${p.pred.padEnd(9)} actual ${p.actual}\n`; t.innerHTML = s; }
+    t.innerHTML = s + `\n<span class="dim"># that's a working classifier.</span>`;
+  } catch (e) { t.textContent = "Error: " + e.message; }
+  b.disabled = false;
+};
+$("#copyCode").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#code").textContent); toast("Code copied"); } catch { toast("Select the code and copy manually"); }
+};
+
+boot();
+</script>
+</body>
+</html>
