@@ -68,4 +68,3 @@ The gear icon opens model settings (hyperparameters, scaling, CV folds). The sea
 
 `GET /api/meta` · `GET /api/preview/{dataset}` · `POST /api/run` (NDJSON stream) ·
 `POST /api/sweep` (stream) · `POST /api/compare` (stream) · `POST /api/predict` · `POST /api/quickrun`
-Interactive API docs: http://127.0.0.1:8000/docs
